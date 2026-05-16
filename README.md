@@ -1,32 +1,45 @@
-# AutoGreeting - Hệ Thống Chào Mừng Tự Động Cho Xe Hơi
+# AutoGreeting
 
-AutoGreeting là ứng dụng Android chuyên dụng được thiết kế để cá nhân hóa trải nghiệm khởi động xe hơi bằng các âm thanh chào mừng tự động và giao diện điều khiển thông minh.
+Ứng dụng Android chuyên dụng để cá nhân hóa trải nghiệm khởi động xe hơi bằng các âm thanh chào mừng tự động. Dự án tập trung vào độ tin cậy của việc kích hoạt dịch vụ ngay khi hệ thống Android của xe (Head Unit) hoàn tất quá trình Boot.
 
-## Các Tính Năng Chính
-| Tính Năng | Mô Tả |
-| :--- | :--- |
-| **Tự Khởi Động** | Tự động kích hoạt ngay khi hệ thống Android của xe hoàn tất quá trình Boot. |
-| **Phát Âm Thanh** | Phát lời chào hoặc bản nhạc đã cấu hình với chất lượng cao. |
-| **Nút Điều Khiển Nổi** | Cung cấp widget nổi (Overlay) để dừng/phát nhạc nhanh chóng mà không cần mở app. |
-| **Quản Lý Phiên** | Hệ thống đăng nhập bảo mật để đồng bộ hóa các tùy chỉnh cá nhân. |
-| **Báo Cáo Chẩn Đoán** | Tự động tạo log và báo cáo trạng thái vận hành để xử lý sự cố. |
+## Tính năng chính
 
-## Công Nghệ Sử Dụng
-- **Ngôn ngữ:** Kotlin 100%.
-- **Kiến trúc:** MVVM với Jetpack Compose cho giao diện người dùng.
-- **Xử lý ngầm:** Foreground Services kết hợp với Broadcast Receivers (Boot Completed).
-- **DI:** Hilt (Dagger) cho Dependency Injection.
-- **Lưu trữ:** Jetpack DataStore.
+| Phân loại | Mô tả chi tiết |
+|-----------|---------------|
+| Tự khởi động | Tự động kích hoạt ngay khi nhận sự kiện `BOOT_COMPLETED` từ hệ thống Android của xe. |
+| Phát âm thanh | Phát lời chào hoặc bản nhạc đã cấu hình với khả năng ưu tiên âm thanh cao khi khởi động. |
+| Nút điều khiển nổi | Floating Button hiển thị trên các ứng dụng dẫn đường, cho phép thao tác nhanh mà không cần mở app. |
+| Quản lý phiên | Hệ thống đăng nhập bảo mật để đồng bộ hóa và lưu trữ các tùy chỉnh cá nhân. |
+| Hệ thống chẩn đoán | Tự động tạo báo cáo log và chẩn đoán trạng thái vận hành để hỗ trợ xử lý sự cố. |
 
-## Cấu Trúc Dự Án
-- `car`: Module chính chứa toàn bộ Logic xử lý âm thanh và giao diện.
-- `service`: Chứa các dịch vụ chạy ngầm duy trì hoạt động của ứng dụng.
-- `ui`: Giao diện người dùng hiện đại sử dụng Compose.
-- `utils`: Bộ công cụ hỗ trợ xử lý quyền và tối ưu hóa thiết bị.
+## Công nghệ và Kiến trúc
 
-## Yêu Cầu Hệ Thống
-- Android 10 trở lên (Khuyến khích Android 12+ cho độ ổn định cao nhất).
-- Cần cấp quyền **Hệ thống cửa sổ cảnh báo** (Overlay) và **Tự khởi chạy** (Autostart) trên các dòng máy OEM (Xiaomi, Oppo, Vivo).
+| Thành phần | Công nghệ sử dụng |
+|------------|-------------------|
+| Ngôn ngữ | Kotlin |
+| Kiến trúc | MVVM |
+| Giao diện UI | Jetpack Compose (Modern UI Framework) |
+| Dependency Injection | Hilt |
+| Xử lý ngầm | Foreground Services, Broadcast Receivers |
+| Lưu trữ dữ liệu | Jetpack DataStore |
+| Xử lý Media | Android MediaPlayer / ExoPlayer |
 
----
-© 2026 Hạ Ngọc Khánh. Bản quyền đã được bảo lưu.
+## Cấu trúc dự án
+
+```text
+AutoGreeting/
+├── car/                    # Module chính chứa Logic xử lý
+│   └── src/main/java/.../carchatbot/
+│       ├── boot/           # BootCompletedReceiver (Trigger khởi động)
+│       ├── service/        # CoreService, SoundPlayerService, FloatingButtonService
+│       ├── ui/             # Giao diện Compose (Main, Login, Permissions)
+│       ├── data/           # Repository, DataStore, Preferences
+│       ├── support/        # LogExporter, Diagnostics Report
+│       └── utils/          # AutoStartHelper, DeviceUtils (OEM optimization)
+├── docs/                   # Tài liệu chi tiết (Main Flow, Architecture, Device)
+└── README.md
+```
+
+## Bản quyền
+
+Dự án thuộc sở hữu của Hạ Ngọc Khánh.
