@@ -1,42 +1,42 @@
 # AutoGreeting
 
-Ứng dụng Android chuyên dụng để cá nhân hóa trải nghiệm khởi động xe hơi bằng các âm thanh chào mừng tự động. Dự án tập trung vào độ tin cậy của việc kích hoạt dịch vụ ngay khi hệ thống Android của xe (Head Unit) hoàn tất quá trình Boot.
+Giải pháp tối ưu để tự động hóa lời chào và âm thanh khởi động trên màn hình Android ô tô (Head Unit). Không giống như các công cụ tự động hóa thông thường, AutoGreeting được thiết kế với các cơ chế phục hồi chuyên sâu để đảm bảo hoạt động ổn định ngay cả khi hệ thống của xe gặp lỗi hoặc bị hạn chế.
 
 ## Tính năng chính
 
 | Phân loại | Mô tả chi tiết |
 |-----------|---------------|
-| Tự khởi động | Tự động kích hoạt ngay khi nhận sự kiện `BOOT_COMPLETED` từ hệ thống Android của xe. |
-| Phát âm thanh | Phát lời chào hoặc bản nhạc đã cấu hình với khả năng ưu tiên âm thanh cao khi khởi động. |
-| Nút điều khiển nổi | Floating Button hiển thị trên các ứng dụng dẫn đường, cho phép thao tác nhanh mà không cần mở app. |
-| Quản lý phiên | Hệ thống đăng nhập bảo mật để đồng bộ hóa và lưu trữ các tùy chỉnh cá nhân. |
-| Hệ thống chẩn đoán | Tự động tạo báo cáo log và chẩn đoán trạng thái vận hành để hỗ trợ xử lý sự cố. |
+| Đa tầng kích hoạt | Xử lý linh hoạt các tín hiệu Boot, QuickBoot (xe Trung Quốc) và các sự kiện thức dậy từ chế độ Sleep của xe. |
+| Cơ chế phát bù | Tự động nhận diện và phát lời chào ngay cả khi tín hiệu khởi động ngầm bị hệ thống Android chặn (Visible Compatibility Path). |
+| Chống lặp thông minh | Thuật toán Deduplication ngăn chặn việc phát lời chào nhiều lần do tín hiệu Boot không ổn định của Head Unit. |
+| Điều khiển nổi | Nút điều khiển Overlay giúp tương tác nhanh với âm thanh mà không làm gián đoạn ứng dụng dẫn đường (Google Maps, Navitel). |
+| Chẩn đoán chuyên sâu | Hệ thống Diagnostics Report phân tích chi tiết từng giai đoạn (Trigger -> Focus -> Playback) để tìm nguyên nhân lỗi chính xác. |
 
 ## Công nghệ và Kiến trúc
 
 | Thành phần | Công nghệ sử dụng |
 |------------|-------------------|
 | Ngôn ngữ | Kotlin |
-| Kiến trúc | MVVM |
 | Giao diện UI | Jetpack Compose (Modern UI Framework) |
+| Lớp chính sách | AppRuntimePolicies (Quản lý cửa sổ thời gian và phục hồi lỗi) |
 | Dependency Injection | Hilt |
-| Xử lý ngầm | Foreground Services, Broadcast Receivers |
-| Lưu trữ dữ liệu | Jetpack DataStore |
-| Xử lý Media | Android MediaPlayer / ExoPlayer |
+| Xử lý ngầm | Foreground Services, Broadcast Receivers đa tầng |
+| Lưu trữ dữ liệu | Jetpack DataStore (Chống hỏng dữ liệu khi mất điện đột ngột) |
+| Xử lý Media | Multi-Engine (MediaPlayer / ExoPlayer) |
 
 ## Cấu trúc dự án
 
 ```text
 AutoGreeting/
-├── car/                    # Module chính chứa Logic xử lý
+├── car/                    # Module chính xử lý logic xe hơi
 │   └── src/main/java/.../carchatbot/
-│       ├── boot/           # BootCompletedReceiver (Trigger khởi động)
-│       ├── service/        # CoreService, SoundPlayerService, FloatingButtonService
-│       ├── ui/             # Giao diện Compose (Main, Login, Permissions)
-│       ├── data/           # Repository, DataStore, Preferences
-│       ├── support/        # LogExporter, Diagnostics Report
-│       └── utils/          # AutoStartHelper, DeviceUtils (OEM optimization)
-├── docs/                   # Tài liệu chi tiết (Main Flow, Architecture, Device)
+│       ├── boot/           # Xử lý đa tầng tín hiệu Boot & QuickBoot
+│       ├── runtime/        # AppRuntimePolicies (Trái tim điều khiển hệ thống)
+│       ├── service/        # Các dịch vụ Core, SoundPlayer và Overlay
+│       ├── ui/             # Giao diện Compose hiện đại
+│       ├── support/        # Hệ thống chẩn đoán lỗi chuyên sâu (Diagnostics)
+│       └── utils/          # Công cụ tối ưu hóa thiết bị và xử lý file âm thanh
+├── docs/                   # Tài liệu chi tiết (Main Flow, Architecture, Device Optimization)
 └── README.md
 ```
 

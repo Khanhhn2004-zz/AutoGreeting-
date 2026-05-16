@@ -1,28 +1,27 @@
-# Kiến Trúc Kỹ Thuật - AutoGreeting
+# Kiến Trúc Kỹ Thuật & Độ Tin Cậy - AutoGreeting
 
-Dự án này được thiết kế để hoạt động ổn định trong môi trường nhúng (Embedded) của Android Car Head Units.
+Dự án được xây dựng với mục tiêu giải quyết triệt để vấn đề "mất tín hiệu khởi động" trên các dòng Head Unit Android ô tô.
 
-## 1. Mô Hình Phát Triển (Architecture Model)
-Ứng dụng sử dụng mô hình **MVVM (Model-View-ViewModel)** kết hợp với **Jetpack Compose**:
-- **UI Component:** Sử dụng Compose để xây dựng giao diện khai báo (Declarative UI), giúp giảm thiểu mã nguồn XML và tăng tốc độ xử lý giao diện.
-- **State Management:** `MainViewModel` và `LoginViewModel` quản lý trạng thái của ứng dụng thông qua `StateFlow` và `MutableState`, đảm bảo tính phản hồi tức thì của UI.
+## 1. Thành Phần Cốt Lõi: AppRuntimePolicies
 
-## 2. Hệ Thống Dịch Vụ Chạy Ngầm (Background Services)
-Do tính chất của ứng dụng là tự động hóa, các Service đóng vai trò then chốt:
-- **Foreground Service:** `SoundPlayerService` và `FloatingButtonService` được chạy dưới dạng Foreground Service (có thông báo) để tránh bị Android dừng khi thiếu bộ nhớ.
-- **Service Coordination:** `CoreService` hoạt động như một lớp trung gian để điều phối dữ liệu giữa UI và các dịch vụ thực thi âm thanh.
+Đây là trung tâm điều khiển toàn bộ hành vi của ứng dụng, thay thế cho các logic đơn giản của MacroDroid.
 
-## 3. Quản Lý Phụ Thuộc (Dependency Injection)
-**Hilt (Dagger)** được sử dụng xuyên suốt dự án:
-- Tự động hóa việc khởi tạo `AppLogger`, `UpdateManager` và các Repository.
-- Giúp việc kiểm thử (Testing) và bảo trì mã nguồn trở nên dễ dàng hơn nhờ tính lỏng lẻo của các thành phần.
+*   **Window-based Logic:** Sử dụng các hằng số thời gian (`BOOT_STARTUP_WINDOW`, `HEAD_UNIT_SLEEP_WAKE_WINDOW`) để định nghĩa trạng thái của thiết bị.
+*   **Startup Recovery:** Hệ thống đánh giá `BootLikeVisibleCompatEvaluation` giúp quyết định xem một lần mở app có phải là kết quả của việc hệ thống "quên" chạy ngầm hay không.
+*   **Device-Specific Workarounds:**
+    *   **Compose Hover Fix:** Xử lý lỗi crash `ACTION_HOVER_EXIT` trên các thiết bị Android 11/SDK 30 (như Mi A3 hoặc Head Unit dùng chip tương đương).
+    *   **Overlay Compatibility:** Cơ chế `canDrawOverlaysCompat` hỗ trợ kiểm tra quyền hiển thị trên nhiều phiên bản Android khác nhau, đảm bảo Floating Button luôn hoạt động.
 
-## 4. Xử Lý Giao Diện Lớp Phủ (System Overlay)
-`FloatingButtonService` sử dụng quyền `TYPE_APPLICATION_OVERLAY`:
-- **FloatingButtonPlaybackResolver:** Chịu trách nhiệm giải quyết các xung đột khi có nhiều yêu cầu điều khiển từ nút nổi.
-- Tự động điều chỉnh kích thước và vị trí để không gây cản trở tầm nhìn của tài xế khi sử dụng các ứng dụng dẫn đường.
+## 2. Hệ Thống Chẩn Đoán (Diagnostics Engine)
 
-## 5. Hệ Thống Log & Report chuyên sâu
-Khác với các ứng dụng thông thường, AutoGreeting tích hợp sẵn:
-- **SupportLogExporter:** Trích xuất log hệ thống dưới dạng tệp tin nén.
-- **DiagnosticsPrivacySanitizer:** Tự động xóa bỏ các thông tin nhạy cảm (như địa chỉ, ID thiết bị) khỏi log trước khi gửi báo cáo, bảo vệ quyền riêng tư của người dùng.
+Ứng dụng tích hợp một công cụ render báo cáo lỗi cực kỳ chi tiết (`DiagnosticsReportRenderer`), giúp người dùng và kỹ thuật viên tìm ra nguyên nhân tại sao lời chào không phát:
+
+*   **Timeline Analysis:** Ghi lại chính xác thời điểm nhận tín hiệu Boot, thời điểm Service khởi chạy và kết quả yêu cầu Audio Focus.
+*   **Signal Probe:** Theo dõi các "Raw Boot Receiver Probe" để xác định xem lỗi nằm ở hệ thống Android (không gửi tín hiệu) hay ở ứng dụng (bị chặn xử lý).
+*   **Privacy Sanitizer:** Tự động lọc các thông tin nhạy cảm (Số điện thoại, IP, Email) trước khi xuất báo cáo, đảm bảo an toàn thông tin người dùng.
+
+## 3. Quản Lý Âm Thanh & Dữ Liệu
+
+*   **Multi-Engine Audio:** Hỗ trợ linh hoạt giữa MediaPlayer (nhẹ, tương thích cao) và ExoPlayer (mạnh mẽ cho các định dạng phức tạp).
+*   **Smart Cache:** Cơ chế `isSoundMissing` kiểm tra kích thước và sự tồn tại của file âm thanh (tối thiểu 2KB). Nếu file không hợp lệ, hệ thống sẽ tự động khôi phục từ máy chủ.
+*   **DataStore Preferences:** Sử dụng Jetpack DataStore thay cho SharedPreferences để đảm bảo an toàn dữ liệu và tránh tình trạng "corrupt" dữ liệu khi Head Unit bị ngắt điện đột ngột.
